@@ -42,13 +42,20 @@
 </head>
 <body class="p-6 md:p-10 min-h-screen">
 
-    <header class="mb-12 text-center">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-2">
+    <header class="mb-10 text-center relative max-w-7xl mx-auto">
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-4">
             <span class="text-blue-500">G</span>UILD <span class="text-blue-500">G</span>EAR <span class="text-blue-500">V</span>IEWER
         </h1>
-        <div class="inline-flex items-center bg-white border border-blue-100 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
-            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
-            LIVE DATA
+        
+        <div class="flex justify-center items-center gap-4">
+            <div class="inline-flex items-center bg-white border border-blue-100 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
+                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+                LIVE DATA
+            </div>
+
+            <button onclick="toggleSort()" id="sortBtn" class="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm transition-colors">
+                <span>⇵</span> Loading...
+            </button>
         </div>
     </header>
 
@@ -60,22 +67,29 @@
     </div>
 
     <script>
-        // ★ご指定のGAS URLを設定済み★
         const API_URL = "https://script.google.com/macros/s/AKfycbwZu7V7eUpifgvT_9HmN9NiSUJkHFFrfoIVJKv7zFUfZG5_B_RamCNcnKmcQRoenYPBRw/exec";
 
         // アイコン変換マップ
         const ICON_MAP = {
-            "歩": "🛡️", // 盾
-            "弓": "🏹", // 弓
-            "騎": "🐎", // 馬
-            "軍": "⚔️"  // 剣
+            "歩": "🛡️",
+            "弓": "🏹",
+            "騎": "🐎",
+            "軍": "⚔️"
         };
+
+        // データを保持しておく変数
+        let allMembers = [];
+        let isDesc = true; // true=降順(高い順), false=昇順(低い順)
 
         async function fetchData() {
             try {
                 const res = await fetch(API_URL);
-                const data = await res.json();
-                render(data);
+                allMembers = await res.json(); // データをグローバル変数に保存
+                
+                // 初回は高い順（降順）でソートして表示
+                sortMembers();
+                updateSortButton();
+                render(allMembers);
             } catch (e) {
                 document.getElementById('app').innerHTML = `
                     <div class="col-span-full flex justify-center">
@@ -84,6 +98,34 @@
                             <p class="text-xs mt-1 opacity-75">${e.message}</p>
                         </div>
                     </div>`;
+            }
+        }
+
+        // ソート実行関数
+        function sortMembers() {
+            allMembers.sort((a, b) => {
+                // 数値として比較（念のためparseFloat）
+                let valA = parseFloat(a.total) || 0;
+                let valB = parseFloat(b.total) || 0;
+                return isDesc ? valB - valA : valA - valB;
+            });
+        }
+
+        // ソートボタン切り替え
+        function toggleSort() {
+            isDesc = !isDesc; // 反転
+            sortMembers();    // 並び替え
+            updateSortButton(); // ボタンの文字更新
+            render(allMembers); // 再描画
+        }
+
+        // ボタンの見た目を更新
+        function updateSortButton() {
+            const btn = document.getElementById('sortBtn');
+            if(isDesc) {
+                btn.innerHTML = `<span class="text-blue-500 text-sm">▼</span> Total: High to Low`;
+            } else {
+                btn.innerHTML = `<span class="text-emerald-500 text-sm">▲</span> Total: Low to High`;
             }
         }
 
@@ -102,7 +144,7 @@
                     <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
                         <div class="w-2/3 pr-2">
                             <h2 class="text-lg font-bold text-slate-800 leading-tight truncate" title="${m.name}">${m.name}</h2>
-                            </div>
+                        </div>
                         <div class="text-right">
                             <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Total</div>
                             <div class="text-2xl font-black text-blue-600 leading-none tracking-tight">${m.total}<span class="text-sm font-bold text-blue-300 ml-0.5">%</span></div>
