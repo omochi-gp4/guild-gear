@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild Gear Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* 全体のテーマ設定 */
+        body {
+            background-color: #f1f5f9; /* 明るいグレーの背景 */
+            color: #334155;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* カードのデザイン */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* ホバー時の動き */
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #60a5fa; /* 青色のアクセント */
+        }
+        
+        /* ▼ レアリティごとの色指定 ▼ */
+        .rarity-ミシ { color: #f97316; }   /* オレンジ */
+        .rarity-レジェ { color: #eab308; } /* 黄色（ゴールド） */
+        .rarity-エピ { color: #9333ea; }   /* 紫 */
+        
+        /* 絵文字アイコンのフォント調整 */
+        .emoji-icon {
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10 min-h-screen">
+
+    <header class="mb-12 text-center">
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-2">
+            <span class="text-blue-500">G</span>UILD <span class="text-blue-500">G</span>EAR <span class="text-blue-500">V</span>IEWER
+        </h1>
+        <div class="inline-flex items-center bg-white border border-blue-100 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
+            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+            LIVE DATA
+        </div>
+    </header>
+
+    <div id="app" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="col-span-full text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-100 border-t-blue-500 mb-4"></div>
+            <p class="text-slate-400 text-sm font-medium">Fetching Data...</p>
+        </div>
+    </div>
+
+    <script>
+        // ★ご指定のGAS URLを設定済み★
+        const API_URL = "https://script.google.com/macros/s/AKfycbwZu7V7eUpifgvT_9HmN9NiSUJkHFFrfoIVJKv7zFUfZG5_B_RamCNcnKmcQRoenYPBRw/exec";
+
+        // アイコン変換マップ
+        const ICON_MAP = {
+            "歩": "🛡️", // 盾
+            "弓": "🏹", // 弓
+            "騎": "🐎", // 馬
+            "軍": "⚔️"  // 剣
+        };
+
+        async function fetchData() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                render(data);
+            } catch (e) {
+                document.getElementById('app').innerHTML = `
+                    <div class="col-span-full flex justify-center">
+                        <div class="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-xl text-center">
+                            <p class="font-bold">データ読み込みエラー</p>
+                            <p class="text-xs mt-1 opacity-75">${e.message}</p>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function render(members) {
+            const container = document.getElementById('app');
+            
+            if (!members || members.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-slate-400">データが見つかりません</div>`;
+                return;
+            }
+
+            container.innerHTML = members.map(m => `
+                <div class="card rounded-2xl p-6 flex flex-col h-full relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                    <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
+                        <div class="w-2/3 pr-2">
+                            <h2 class="text-lg font-bold text-slate-800 leading-tight truncate" title="${m.name}">${m.name}</h2>
+                            </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Total</div>
+                            <div class="text-2xl font-black text-blue-600 leading-none tracking-tight">${m.total}<span class="text-sm font-bold text-blue-300 ml-0.5">%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-blue-50/50 rounded-xl p-3 border border-blue-100">
+                            <p class="text-[10px] text-blue-500 font-bold mb-2 uppercase tracking-wide border-b border-blue-200/50 pb-1">Attack</p>
+                            <div class="space-y-1.5 pt-1">
+                                ${m.stats.atk.map(s => `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="emoji-icon text-base filter grayscale-[0.2]" title="${s.label}">${ICON_MAP[s.label] || s.label}</span>
+                                        <span class="font-bold text-slate-700 font-mono">${s.val}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50/50 rounded-xl p-3 border border-emerald-100">
+                            <p class="text-[10px] text-emerald-600 font-bold mb-2 uppercase tracking-wide border-b border-emerald-200/50 pb-1">HP</p>
+                            <div class="space-y-1.5 pt-1">
+                                ${m.stats.hp.map(s => `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="emoji-icon text-base filter grayscale-[0.2]" title="${s.label}">${ICON_MAP[s.label] || s.label}</span>
+                                        <span class="font-bold text-slate-700 font-mono">${s.val}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        <p class="text-[10px] text-slate-400 font-bold mb-2 uppercase tracking-wider">Equipments</p>
+                        <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-2">
+                            ${m.gears.map(g => {
+                                let rarityBadge = "";
+                                let lvBadge = "";
+                                let rarityClass = `rarity-${g.rarity}`;
+
+                                if (g.rarity === "レジェ" || g.rarity === "エピ") {
+                                    rarityBadge = `<span class="${rarityClass} font-black text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 ml-auto">${g.rarity}</span>`;
+                                } else {
+                                    rarityBadge = `<span class="${rarityClass} font-black text-[10px] mr-1.5">${g.rarity}</span>`;
+                                    lvBadge = `<span class="text-slate-300 text-[10px] mr-0.5">Lv.</span><span class="text-slate-700 font-bold font-mono text-xs w-[30px] text-right inline-block">${g.lv}</span>`;
+                                }
+
+                                return `
+                                <div class="py-1.5 border-b border-slate-50 text-slate-600 text-[11px] font-medium truncate" title="${g.name}">
+                                    ${g.name}
+                                </div>
+                                <div class="py-1.5 border-b border-slate-50 flex items-center justify-end whitespace-nowrap">
+                                    ${rarityBadge}
+                                    ${lvBadge}
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        fetchData();
+    </script>
+</body>
+</html>
