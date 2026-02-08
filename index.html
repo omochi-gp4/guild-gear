@@ -46,6 +46,7 @@
         /* Lv.15の赤字クラス（太字解除） */
         .lv-max {
             color: #ef4444; /* 赤 */
+            font-weight: 700; /* 通常の太さに戻すなら400、少し強調なら700 */
         }
 
         .emoji-icon { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
@@ -83,7 +84,7 @@
         const ICON_MAP = { "歩": "🛡️", "弓": "🏹", "騎": "🐎", "軍": "⚔️" };
         
         // 装備部位のリスト（日本語表記に変更）
-        const GEAR_SLOTS = ["メイン", "頭", "体", "足", "サブ", "アクセ", "アクセ", "アクセ"];
+        const GEAR_SLOTS = ["メイン", "頭", "身体", "足", "サブ", "アクセ", "アクセ", "アクセ"];
 
         let allMembers = [];
         let isDesc = true;
@@ -184,6 +185,9 @@
                                 let rarityBadge = "";
                                 let lvBadge = "";
                                 let rarityClass = `rarity-${g.rarity}`;
+                                
+                                // Lv15なら赤字 (太字はlv-maxクラス内で調整可、今回はfont-weight: 700で標準的な太さ)
+                                let lvClass = (g.lv == 15) ? "lv-max" : "text-slate-700 font-bold font-mono text-xs";
 
                                 // 部位ラベル（日本語）
                                 let slotName = GEAR_SLOTS[index] || "Other";
@@ -218,6 +222,3 @@
     </script>
 </body>
 </html>
-
-
-
