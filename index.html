@@ -46,7 +46,7 @@
         /* Lv.15の赤字クラス（太字解除） */
         .lv-max {
             color: #ef4444; /* 赤 */
-            font-weight: 700; /* 通常の太さに戻すなら400、少し強調なら700 */
+            font-weight: 400; /* 通常の太さに戻すなら400、少し強調なら700 */
         }
 
         .emoji-icon { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
@@ -84,7 +84,7 @@
         const ICON_MAP = { "歩": "🛡️", "弓": "🏹", "騎": "🐎", "軍": "⚔️" };
         
         // 装備部位のリスト（日本語表記に変更）
-        const GEAR_SLOTS = ["メイン", "頭", "身体", "足", "サブ", "アクセ", "アクセ", "アクセ"];
+        const GEAR_SLOTS = ["メイン", "頭", "体", "足", "サブ", "アクセ", "アクセ", "アクセ"];
 
         let allMembers = [];
         let isDesc = true;
@@ -222,3 +222,4 @@
     </script>
 </body>
 </html>
+
