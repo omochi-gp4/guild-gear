@@ -7,34 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* ▼ 背景の動的エフェクト ▼ */
+        /* 背景：静的なZenn風グレーに戻しました */
         body {
-            background: linear-gradient(-45deg, #f1f5f9, #e2e8f0, #cbd5e1, #f8fafc);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: #f1f5f9;
             color: #334155;
             font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
         
         /* カードのデザイン */
         .card {
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: #ffffff;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(5px);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
         }
         
+        /* ホバー時の動き */
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border-color: #60a5fa;
         }
         
@@ -43,35 +34,34 @@
         .rarity-レジェ { color: #eab308; } /* 黄色 */
         .rarity-エピ { color: #9333ea; }   /* 紫 */
         
-        /* Lv.15の赤字クラス（太字解除） */
-        .lv-max {
-            color: #ef4444; /* 赤 */
-            font-weight: 700; /* 通常の太さに戻すなら400、少し強調なら700 */
+        /* Lv.15用の赤字クラス（色はTailwindのtext-red-500と同じ #ef4444） */
+        .text-lv-max {
+            color: #ef4444;
         }
 
         .emoji-icon { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
     </style>
 </head>
-<body class="p-6 md:p-10">
+<body class="p-6 md:p-10 min-h-screen">
 
-    <header class="mb-10 text-center relative max-w-7xl mx-auto z-10">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-4 drop-shadow-sm">
+    <header class="mb-10 text-center relative max-w-7xl mx-auto">
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-4">
             <span class="text-blue-500">G</span>UILD <span class="text-blue-500">G</span>EAR <span class="text-blue-500">V</span>IEWER
         </h1>
         
         <div class="flex justify-center items-center gap-4">
-            <div class="inline-flex items-center bg-white/80 backdrop-blur border border-blue-100 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
+            <div class="inline-flex items-center bg-white border border-blue-100 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
                 <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
                 LIVE DATA
             </div>
 
-            <button onclick="toggleSort()" id="sortBtn" class="flex items-center gap-2 bg-white/80 backdrop-blur hover:bg-white border border-slate-200 text-slate-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm transition-colors cursor-pointer">
+            <button onclick="toggleSort()" id="sortBtn" class="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm transition-colors cursor-pointer">
                 <span>⇵</span> Loading...
             </button>
         </div>
     </header>
 
-    <div id="app" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-0">
+    <div id="app" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <div class="col-span-full text-center py-20">
             <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-100 border-t-blue-500 mb-4"></div>
             <p class="text-slate-400 text-sm font-medium">Fetching Data...</p>
@@ -83,7 +73,7 @@
 
         const ICON_MAP = { "歩": "🛡️", "弓": "🏹", "騎": "🐎", "軍": "⚔️" };
         
-        // 装備部位のリスト（日本語表記に変更）
+        // 装備部位（日本語）
         const GEAR_SLOTS = ["メイン", "頭", "身体", "足", "サブ", "アクセ", "アクセ", "アクセ"];
 
         let allMembers = [];
@@ -186,8 +176,9 @@
                                 let lvBadge = "";
                                 let rarityClass = `rarity-${g.rarity}`;
                                 
-                                // Lv15なら赤字 (太字はlv-maxクラス内で調整可、今回はfont-weight: 700で標準的な太さ)
-                                let lvClass = (g.lv == 15) ? "lv-max" : "text-slate-700 font-bold font-mono text-xs";
+                                // Lv15判定：Lv15なら text-lv-max(赤色)、それ以外は通常色(text-slate-700)
+                                // 太さはどちらも font-bold で統一
+                                let lvColorClass = (g.lv == 15) ? "text-lv-max" : "text-slate-700";
 
                                 // 部位ラベル（日本語）
                                 let slotName = GEAR_SLOTS[index] || "Other";
@@ -196,7 +187,7 @@
                                     rarityBadge = `<span class="${rarityClass} font-black text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 ml-auto">${g.rarity}</span>`;
                                 } else {
                                     rarityBadge = `<span class="${rarityClass} font-black text-[10px] mr-1.5">${g.rarity}</span>`;
-                                    lvBadge = `<span class="text-slate-300 text-[10px] mr-0.5">Lv.</span><span class="${lvClass} w-[30px] text-right inline-block">${g.lv}</span>`;
+                                    lvBadge = `<span class="text-slate-300 text-[10px] mr-0.5">Lv.</span><span class="${lvColorClass} font-bold font-mono text-xs w-[30px] text-right inline-block">${g.lv}</span>`;
                                 }
 
                                 return `
@@ -221,4 +212,4 @@
         fetchData();
     </script>
 </body>
-</html>
+</html>edeee
